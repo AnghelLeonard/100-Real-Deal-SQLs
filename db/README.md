@@ -1,6 +1,4 @@
-# Database schema for testing 100+ real deal SQLs
-
-# Good to know before running the code
+# Database Schema For Testing 100+ Real Deal SQLs
 
 The database schema (`classicmodels`) is available for four dialects: MySQL, PostgreSQL, SQL Server, and Oracle. Depending on dialect, the corresponding schema may contain things (e.g., data types) that are specific to that dialect. 
 

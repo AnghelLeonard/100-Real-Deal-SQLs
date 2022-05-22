@@ -1,1 +1,1 @@
-# 100-SQL-Real-Deal-Solved
+# 100-SQL-Real-Deal-SQLs

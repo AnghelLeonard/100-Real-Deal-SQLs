@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>sql.coding.challenge</groupId>
+    <artifactId>PostgreSQL</artifactId>
+    <version>1.0</version>
+    <packaging>jar</packaging>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        
+        <jooq.version>3.16.5</jooq.version>        
+        <flyway.version>7.15.0</flyway.version>
+        <codehaus.mojo.version>1.0.0</codehaus.mojo.version>  
+        <postgresql.connector.version>42.3.5</postgresql.connector.version>     
+        <logback.version>1.2.3</logback.version>  
+    </properties>
+    <name>PostgreSQL</name>
+    
+    <dependencies>
+        <dependency>
+            <groupId>org.jooq</groupId>
+            <artifactId>jooq</artifactId>         
+            <version>${jooq.version}</version>
+        </dependency>  
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+            <version>${flyway.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>${postgresql.connector.version}</version>
+        </dependency>   
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>${logback.version}</version>
+        </dependency>   
+    </dependencies>    
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>properties-maven-plugin</artifactId>
+                <version>${codehaus.mojo.version}</version>
+                <executions>
+                    <execution>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>read-project-properties</goal>
+                        </goals>
+                        <configuration>
+                            <files>                                
+                                <file>src/main/resources/application.properties</file>
+                            </files>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin> 
+            <plugin>
+                <groupId>org.flywaydb</groupId>
+                <artifactId>flyway-maven-plugin</artifactId>                
+                <version>${flyway.version}</version>
+                <executions>                    
+                    <execution>
+                        <id>postgresql</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>migrate</goal>
+                        </goals>                    
+                        <configuration>
+                            <url>${postgresql.datasource.url}</url>
+                            <user>${postgresql.datasource.username}</user>
+                            <password>${postgresql.datasource.password}</password>  
+                            <locations>
+                                <location>filesystem:./../db/migration/dev/postgresql</location>
+                            </locations>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.jooq</groupId>
+                <artifactId>jooq-codegen-maven</artifactId>            
+                <version>${jooq.version}</version>
+                <executions>                    
+                    <execution>
+                        <id>generate-postgresql</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>                    
+                        <configuration xmlns="http://www.jooq.org/xsd/jooq-codegen-3.16.0.xsd">  
+                               
+                            <!-- Configure the database connection here -->
+                            <jdbc>
+                                <driver>${postgresql.datasource.driverClassName}</driver>
+                                <url>${postgresql.datasource.url}</url>
+                                <user>${postgresql.datasource.username}</user>
+                                <password>${postgresql.datasource.password}</password>                        
+                            </jdbc>                                        
+
+                            <generator>
+                                <!-- The default code generator. 
+                                     You can override this one, to generate your own code style.
+                                     
+                                Supported generators:                                
+                                - org.jooq.codegen.JavaGenerator
+                                - org.jooq.codegen.ScalaGenerator
+                                - org.jooq.codegen.KotlinGenerator
+                                
+                                Defaults to org.jooq.codegen.JavaGenerator -->
+                                <name>org.jooq.codegen.JavaGenerator</name>
+        
+                                <database>                                                                                                                                                                                                 
+                                    <!-- The database type. The format here is:
+                                    org.jooq.meta.[database].[database]Database -->
+                                    <name>org.jooq.meta.postgres.PostgresDatabase</name>
+            
+                                    <!-- The database schema (or in the absence of schema support, in your RDBMS this
+                                    can be the owner, user, database name) to be generated -->
+                                    <inputSchema>public</inputSchema>                 
+            
+                                    <!-- All elements that are generated from your schema
+                                    (A Java regular expression. Use the pipe to separate several expressions)
+                                    Watch out for case-sensitivity. Depending on your database, this might be important! -->       
+                                    <includes>.*</includes>
+            
+                                    <!-- schema version provider -->            
+                                    <schemaVersionProvider>SELECT MAX(version) FROM flyway_schema_history</schemaVersionProvider>
+            
+                                    <!-- All elements that are excluded from your schema
+                                    (A Java regular expression. Use the pipe to separate several expressions).
+                                    Excludes match before includes, i.e. excludes have a higher priority -->
+                                    <excludes>
+                                        flyway_schema_history | akeys | avals | defined | delete.*
+                                        | department_topic_arr | dup | employee_office_arr | exist.*                                   
+                                        | fetchval | get_.* | ghstore.* | gin.* | hs.* | hstore.* 
+                                        | isdefined | isexists | make_array | new_salary | populate_record 
+                                        | sale_price | slice.* | swap | tconvert | update_msrp | postal_code
+                                        | evaluation_criteria | rate_type | vat_type | .*_master | each 
+                                        | skeys | svals | top_three_sales_per_employee | product_of_product_line
+                                    </excludes>
+                                </database>                                              
+                                                                
+                                <target>
+                                    <!-- The destination package of your generated classes (within the destination directory) -->
+                                    <packageName>postgresql.jooq.generated</packageName>
+            
+                                    <!-- The destination directory of your generated classes. Using Maven directory layout here -->
+                                    <directory>target/generated-sources/jooq/postgresql</directory>
+                                </target>
+                            </generator>    
+                                                                                              
+                            <!-- Instead of providing an inline configuration here, you can specify an external XML configuration file here -->
+                            <!-- <configurationFile>file_path</configurationFile> -->
+                    
+                            <!-- A boolean property (or constant) can be specified here to tell the plugin not to do anything -->
+                            <skip>false</skip>                                        
+                        </configuration>
+                    </execution>                    
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>

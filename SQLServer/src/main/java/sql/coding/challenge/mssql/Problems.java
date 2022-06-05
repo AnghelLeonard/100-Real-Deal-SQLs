@@ -1,11 +1,16 @@
 package sql.coding.challenge.mssql;
 
+import java.time.LocalDate;
 import static mssql.jooq.generated.Tables.EMPLOYEE;
+import static mssql.jooq.generated.tables.DailyActivity.DAILY_ACTIVITY;
 import static mssql.jooq.generated.tables.EmployeeStatus.EMPLOYEE_STATUS;
 import static mssql.jooq.generated.tables.Sale.SALE;
 import org.jooq.CloseableDSLContext;
 import org.jooq.impl.DSL;
+import static org.jooq.impl.DSL.field;
+import static org.jooq.impl.DSL.localDateDiff;
 import static org.jooq.impl.DSL.max;
+import static org.jooq.impl.DSL.name;
 
 public final class Problems {
 
@@ -73,6 +78,25 @@ public final class Problems {
                     .orderBy(EMPLOYEE.SALARY.desc())
                     .limit(1)
                     .offset(1)
+                    .fetch();
+        }
+    }
+    
+    /*
+    Write an SQL query to find all dates' id (day_id) with higher conversion compared to 
+    its previous dates (yesterday).
+    */
+    public static void sql004() {
+
+        try ( CloseableDSLContext ctx = DSL.using(URL, USERNAME, PASSWORD)) {
+            ctx.select(field(name("t1", "day_id")), field(name("t1", "day_date")), field(name("t1", "conversion")))
+                    .from(DAILY_ACTIVITY.as(name("t1")))
+                    .innerJoin(DAILY_ACTIVITY.as(name("t2")))
+                    .on(localDateDiff(field(name("t1", "day_date"), LocalDate.class),
+                            field(name("t2", "day_date"), LocalDate.class)).eq(1)
+                            .and(field(name("t1", "conversion"))
+                                    .gt(field(name("t2", "conversion")))))
+                    .orderBy(field(name("t1", "day_date")))
                     .fetch();
         }
     }

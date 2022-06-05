@@ -9,6 +9,7 @@ public class Main {
         Problems.sql001();
         Problems.sql002();
         Problems.sql003();
+        Problems.sql004();
     }
 
 }

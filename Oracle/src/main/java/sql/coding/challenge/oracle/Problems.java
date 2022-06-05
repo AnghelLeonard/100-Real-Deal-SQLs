@@ -1,18 +1,23 @@
 package sql.coding.challenge.oracle;
 
+import java.time.LocalDate;
+import static oracle.jooq.generated.tables.DailyActivity.DAILY_ACTIVITY;
 import static oracle.jooq.generated.tables.Employee.EMPLOYEE;
 import static oracle.jooq.generated.tables.EmployeeStatus.EMPLOYEE_STATUS;
 import static oracle.jooq.generated.tables.Sale.SALE;
 import org.jooq.CloseableDSLContext;
 import org.jooq.impl.DSL;
+import static org.jooq.impl.DSL.field;
+import static org.jooq.impl.DSL.localDateDiff;
 import static org.jooq.impl.DSL.max;
+import static org.jooq.impl.DSL.name;
 
 public final class Problems {
 
     private static final String URL = "jdbc:oracle:thin:@localhost:1521:xe";
     private static final String USERNAME = "CLASSICMODELS";
     private static final String PASSWORD = "classroot";
-    
+
     private Problems() {
         throw new AssertionError("Cannot instantiate");
     }
@@ -20,9 +25,9 @@ public final class Problems {
     /*
     Select the employee's last name and email having the job title 
     starting with 'Sale' and the sales after 2005 are greater than 1000.
-    */
+     */
     public static void sql001() {
-        
+
         try ( CloseableDSLContext ctx = DSL.using(URL, USERNAME, PASSWORD)) {
             ctx.select(EMPLOYEE.LAST_NAME, EMPLOYEE.EMAIL)
                     .from(EMPLOYEE)
@@ -32,9 +37,9 @@ public final class Problems {
                             .and(SALE.FISCAL_YEAR.gt(2005))
                             .and(SALE.SALE_.gt(1000.0)))
                     .fetch();
-        }       
+        }
     }
-    
+
     /*
     Fetch the fiscal year and the maximum profit among all the sales of that 
     fiscal year of sales representatives having status AVERAGE.
@@ -76,5 +81,23 @@ public final class Problems {
                     .fetch();
         }
     }
-}
 
+    /*
+    Write an SQL query to find all dates' id (day_id) with higher conversion compared to 
+    its previous dates (yesterday).
+    */
+    public static void sql004() {
+
+        try ( CloseableDSLContext ctx = DSL.using(URL, USERNAME, PASSWORD)) {
+            ctx.select(field(name("T1", "DAY_ID")), field(name("T1", "DAY_DATE")), field(name("T1", "CONVERSION")))
+                    .from(DAILY_ACTIVITY.as(name("T1")))
+                    .innerJoin(DAILY_ACTIVITY.as(name("T2")))
+                    .on(localDateDiff(field(name("T1", "DAY_DATE"), LocalDate.class),
+                            field(name("T2", "DAY_DATE"), LocalDate.class)).eq(1)
+                            .and(field(name("T1", "CONVERSION"))
+                                    .gt(field(name("T2", "CONVERSION")))))
+                    .orderBy(field(name("T1", "DAY_DATE")))
+                    .fetch();
+        }
+    }
+}

@@ -1,13 +1,17 @@
 package sql.coding.challenge.mysql;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import static mysql.jooq.generated.tables.DailyActivity.DAILY_ACTIVITY;
 import static mysql.jooq.generated.tables.Employee.EMPLOYEE;
 import static mysql.jooq.generated.tables.EmployeeStatus.EMPLOYEE_STATUS;
 import static mysql.jooq.generated.tables.Sale.SALE;
 import org.jooq.CloseableDSLContext;
 import org.jooq.impl.DSL;
 import static org.jooq.impl.DSL.field;
+import static org.jooq.impl.DSL.localDateDiff;
 import static org.jooq.impl.DSL.max;
+import static org.jooq.impl.DSL.name;
 
 public final class Problems {
 
@@ -75,6 +79,25 @@ public final class Problems {
                     .orderBy(EMPLOYEE.SALARY.desc())
                     .limit(1)
                     .offset(1)
+                    .fetch();
+        }
+    }
+    
+    /*
+    Write an SQL query to find all dates' id (day_id) with higher conversion compared to 
+    its previous dates (yesterday).
+    */
+    public static void sql004() {
+
+        try ( CloseableDSLContext ctx = DSL.using(URL, USERNAME, PASSWORD)) {
+            ctx.select(field(name("T1", "DAY_ID")), field(name("T1", "DAY_DATE")), field(name("T1", "CONVERSION")))
+                    .from(DAILY_ACTIVITY.as(name("T1")))
+                    .innerJoin(DAILY_ACTIVITY.as(name("T2")))
+                    .on(localDateDiff(field(name("T1", "DAY_DATE"), LocalDate.class),
+                            field(name("T2", "DAY_DATE"), LocalDate.class)).eq(1)
+                            .and(field(name("T1", "CONVERSION"))
+                                    .gt(field(name("T2", "CONVERSION")))))
+                    .orderBy(field(name("T1", "DAY_DATE")))
                     .fetch();
         }
     }

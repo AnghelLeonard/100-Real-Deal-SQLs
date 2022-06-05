@@ -1,10 +1,8 @@
 package sql.coding.challenge.mysql;
 
 import static mysql.jooq.generated.tables.Employee.EMPLOYEE;
-import static mysql.jooq.generated.tables.Product.PRODUCT;
 import static mysql.jooq.generated.tables.Sale.SALE;
 import org.jooq.CloseableDSLContext;
-import org.jooq.DSLContext;
 import org.jooq.impl.DSL;
 
 public final class Problems {
@@ -23,8 +21,7 @@ public final class Problems {
      */
     public static void sql001() {
 
-        try ( CloseableDSLContext ctx = DSL.using(
-                "jdbc:mysql://localhost:3306/classicmodels", "root", "root")) {
+        try ( CloseableDSLContext ctx = DSL.using(URL, USERNAME, PASSWORD)) {
             ctx.select(EMPLOYEE.LAST_NAME, EMPLOYEE.EMAIL)
                     .from(EMPLOYEE)
                     .innerJoin(SALE)
@@ -33,6 +30,6 @@ public final class Problems {
                             .and(SALE.FISCAL_YEAR.gt(2005))
                             .and(SALE.SALE_.gt(1000.0)))
                     .fetch();
-        }
+        }        
     }
 }

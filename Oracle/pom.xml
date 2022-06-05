@@ -10,7 +10,7 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         
-        <jooq.version>3.16.5</jooq.version>        
+        <jooq.version>3.16.6</jooq.version>        
         <flyway.version>7.15.0</flyway.version>
         <codehaus.mojo.version>1.0.0</codehaus.mojo.version>          
         <oracle.jdbc.version>21.1.0.0</oracle.jdbc.version>
